@@ -1,6 +1,6 @@
 # github-actions-terraform-aws
 
-A CI/CD pipeline to deploy a static website to AWS S3 using Terraform and GitHub Actions.
+A demo project for creating and deploying a static website to AWS S3 using Terraform and GitHub Actions.
 
 ## What it does
 
