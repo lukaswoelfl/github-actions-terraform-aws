@@ -14,7 +14,7 @@ A CI/CD pipeline to deploy a static website to AWS S3 using Terraform and GitHub
 The workflow currently expects these GitHub Secrets:
 
 - `IAM_ROLE` — AWS Role ARN that GitHub Actions should assume
-- `AWS_REGION` — AWS region used for both Terraform and AWS CLI (e.g. `eu-north-1`)
+- `AWS_REGION` — AWS region used for both Terraform and AWS CLI
 - `BUCKET_NAME` — S3 bucket name for the website and Terraform variable
 - `TF_BACKEND_KEY` — Terraform state file key inside the backend bucket
 - `TF_BACKEND_DYNAMODB_TABLE` — DynamoDB table name for Terraform state locking
