@@ -1,42 +1,61 @@
 # github-actions-terraform-aws
 
-A CI/CD pipeline to automate the deployment of static websites to AWS S3 using Terraform and GitHub Actions.
+A CI/CD pipeline to deploy a static website to AWS S3 using Terraform and GitHub Actions.
 
 ## What it does
 
-- **Infrastructure as Code**: Define your AWS S3 bucket with Terraform
-- **Automated Deployments**: Push to `main` branch → automatic deployment via GitHub Actions
-- **Secure**: Uses GitHub OIDC for AWS authentication (no hardcoded credentials)
-- **Static Site Hosting**: Upload HTML, CSS, images directly to S3
+- **Infrastructure as Code**: Creates an S3 bucket with Terraform
+- **Automated Deployment**: Runs on `main` push or manual dispatch
+- **Secure auth**: Uses AWS IAM role assumption via GitHub Actions
+- **Static hosting**: Uploads `index.html`, `images/`, and `styles/` to S3
 
-## Tech Stack
+## GitHub Secrets required
 
-- **Terraform** — Infrastructure provisioning
-- **GitHub Actions** — CI/CD automation
-- **AWS S3** — Static site hosting
-- **AWS IAM OIDC** — Secure authentication
+The workflow currently expects these GitHub Secrets:
 
-## Quick Start
+- `IAM_ROLE` — AWS Role ARN that GitHub Actions should assume
+- `AWS_REGION` — AWS region used for both Terraform and AWS CLI (e.g. `eu-north-1`)
+- `BUCKET_NAME` — S3 bucket name for the website and Terraform variable
+- `TF_BACKEND_KEY` — Terraform state file key inside the backend bucket
+- `TF_BACKEND_DYNAMODB_TABLE` — DynamoDB table name for Terraform state locking
 
-1. Set up GitHub Secrets:
-   - `IAM_ROLE` — AWS Role ARN for OIDC
-   - `AWS_REGION` — AWS region (e.g., `eu-north-1`)
-   - `BUCKET_NAME` — S3 bucket name
+### Notes
 
-2. Push to `main` → Workflow runs automatically
+- `BUCKET_NAME` is reused for the S3 bucket and Terraform variable `bucket_name`
+- `encrypt=true` is hardcoded in the workflow, so no secret is needed for it
+- No AWS access keys are stored in the repo because the workflow uses role assumption
 
-## Structure
+## Workflow behavior
+
+The workflow runs these steps:
+
+1. Checkout the repository
+2. Configure AWS credentials by assuming `IAM_ROLE`
+3. Install Terraform
+4. Initialize Terraform with backend config from secrets
+5. Run `terraform plan`
+6. Run `terraform apply -auto-approve`
+7. Upload `index.html`, `images/`, and `styles/` to the target S3 bucket
+8. List S3 buckets for validation
+
+## Repository structure
 
 ```
-├── terraform/          # Terraform configuration
+├── terraform/                # Terraform configuration
 │   ├── main.tf
-│   ├── variables.tf
 │   ├── provider.tf
+│   ├── variables.tf
 │   └── output.tf
-├── personal-website/   # Static site files
-│   ├── index.html
-│   ├── images/
-│   └── styles/
-└── .github/workflows/  # GitHub Actions workflow
+├── .github/workflows/        # GitHub Actions workflow
+│   └── terraform.yaml
+├── index.html                # Static website entry point
+├── images/                   # Static website assets
+└── styles/                   # CSS styles
 ```
+
+## Publish advice
+
+- Keep backend and state files out of Git (`*.tfbackend`, `*.tfstate`, `.terraform/`, `*.tfvars`)
+- Only publicize the repo once no AWS secrets or state files are committed
+- The workflow file itself is safe because it only references GitHub Secrets
 
