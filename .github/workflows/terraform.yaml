@@ -27,6 +27,8 @@ jobs:
         uses: hashicorp/setup-terraform@v4
       
       - name: Initialize Terraform
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.BUCKET_NAME }}" \
@@ -39,12 +41,14 @@ jobs:
       - name: Terraform Plan
         env:
           TF_VAR_bucket_name: ${{ secrets.BUCKET_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
         run: terraform plan
         working-directory: ./terraform
 
       - name: Terraform Apply
         env:
           TF_VAR_bucket_name: ${{ secrets.BUCKET_NAME }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
         run: terraform apply -auto-approve
         working-directory: ./terraform
 
