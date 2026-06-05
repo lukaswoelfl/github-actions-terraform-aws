@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  listing_buckets:
+  infrastructure_deployment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Reposiory
