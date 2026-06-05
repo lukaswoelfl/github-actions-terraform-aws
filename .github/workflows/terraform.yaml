@@ -35,7 +35,7 @@ jobs:
             -backend-config="key=${{ secrets.TF_BACKEND_KEY }}" \
             -backend-config="region=${{ secrets.AWS_REGION }}" \
             -backend-config="encrypt=true" \
-            -backend-config="dynamodb_table=${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}"
+            -backend-config="use_lockfile=true"
         working-directory: ./terraform
 
       - name: Terraform Plan
