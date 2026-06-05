@@ -11,19 +11,19 @@ A CI/CD pipeline to deploy a static website to AWS S3 using Terraform and GitHub
 
 ## GitHub Secrets required
 
-The workflow currently expects these GitHub Secrets:
+The workflow requires these GitHub Secrets:
 
 - `IAM_ROLE` — AWS Role ARN that GitHub Actions should assume
-- `AWS_REGION` — AWS region used for both Terraform and AWS CLI
-- `BUCKET_NAME` — S3 bucket name for the website and Terraform variable
-- `TF_BACKEND_KEY` — Terraform state file key inside the backend bucket
-- `TF_BACKEND_DYNAMODB_TABLE` — DynamoDB table name for Terraform state locking
+- `AWS_REGION` — AWS region for Terraform and AWS CLI operations
+- `TF_STATE_BUCKET` — Pre-existing S3 bucket where Terraform state is stored
+- `TF_BACKEND_KEY` — Path/key for the state file inside the backend bucket
+- `WEBSITE_BUCKET_NAME` — Name of the S3 bucket to create for the website
 
 ### Notes
 
-- `BUCKET_NAME` is reused for the S3 bucket and Terraform variable `bucket_name`
-- `encrypt=true` is hardcoded in the workflow, so no secret is needed for it
-- No AWS access keys are stored in the repo because the workflow uses role assumption
+- State locking uses S3 with `use_lockfile=true` (no DynamoDB required)
+- `encrypt=true` is hardcoded in the workflow
+- No AWS access keys stored in the repo; uses GitHub OIDC role assumption
 
 ## Workflow behavior
 
@@ -32,10 +32,10 @@ The workflow runs these steps:
 1. Checkout the repository
 2. Configure AWS credentials by assuming `IAM_ROLE`
 3. Install Terraform
-4. Initialize Terraform with backend config from secrets
-5. Run `terraform plan`
+4. Initialize Terraform with S3 backend config and state locking
+5. Run `terraform plan` with `WEBSITE_BUCKET_NAME` variable
 6. Run `terraform apply -auto-approve`
-7. Upload `index.html`, `images/`, and `styles/` to the target S3 bucket
+7. Upload `index.html`, `images/`, and `styles/` to the S3 website bucket
 8. List S3 buckets for validation
 
 ## Repository structure
